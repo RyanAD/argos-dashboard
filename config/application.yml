@@ -1,0 +1,18 @@
+# Port to use when running standalone
+server:
+  port: 9000
+
+discovery:
+    impl: com.bodybuilding.argos.discovery.ClusterListDiscovery
+#    impl: com.bodybuilding.argos.discovery.ConfigurationClusterDiscovery
+turbine:
+# This is used by ClusterListDiscovery
+  clusterlist:
+    servers:
+      - http://turbine-server1:8080/turbine/clusterlist
+      - http://turbine-server2:8080/turbine/clusterlist
+
+## this is used by ConfigurationClusterDiscovery
+  servers:
+    - 'cluster1|http://turbine-server1:8080/turbine/turbine.stream?cluster=cluster1'
+    - 'cluster2|http://turbine-server2:8080/turbine/turbine.stream?cluster=cluster2'

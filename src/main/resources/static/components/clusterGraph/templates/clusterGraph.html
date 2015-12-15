@@ -1,0 +1,58 @@
+<div class="counters">
+
+    <div class="cell line">
+        <a href="javascript://" title="Error Percentage [Timed-out + Threadpool Rejected + Failure / Total]"
+           class="tooltip errorPercentage"><span class="value"><%= errorPercentage %></span> %</a>
+    </div>
+
+    <div class="cell borderRight">
+        <a href="javascript://" title="Timed-out Request Count" class="line tooltip timeout"><%= addCommas(timeoutCount)
+            %></a>
+        <a href="javascript://" title="Threadpool Rejected Request Count" class="line tooltip rejected"><%=
+            addCommas(rejectedCount) %></a>
+        <a href="javascript://" title="Failure Request Count" class="line tooltip failure"><%= addCommas(failCount)
+            %></a>
+    </div>
+    <div class="cell borderRight">
+        <a href="javascript://" title="Successful Request Count" class="line tooltip success"><%=
+            addCommas(successCount) %></a>
+        <a href="javascript://" title="Short-circuited Request Count" class="line tooltip shortCircuited"><%=
+            addCommas(shortCircuitedCount) %></a>
+        <br>
+    </div>
+</div>
+
+<div class="rate">
+    <a href="javascript://" title="Total Request Rate per Second per Reporting Host" class="tooltip rate"><span
+            class="smaller">Host: </span><span class="ratePerSecondPerHost"><%= addCommas(roundNumber(ratePerSecondPerHost)) %></span>/s</a>
+</div>
+<div class="rate">
+    <a href="javascript://" title="Total Request Rate per Second for Cluster" class="tooltip rate"><span
+            class="smaller">Cluster: </span><span
+            class="ratePerSecond"><%= addCommas(roundNumber(requestRate)) %></span>/s</a>
+</div>
+
+
+<div class="circuitStatus">
+    <a class="tooltip rate" href="javascript://"><span class="smaller">Commands: </span> <span><%= commandCount %></span></a>
+</div>
+<div class="circuitStatus">
+    <a class="tooltip rate" href="javascript://"><span class="smaller">Hosts: </span> <span><%= reportingHosts %></span></a>
+</div>
+
+
+<div class="spacer"></div>
+
+<!--<div class="tableRow">
+    <div class="cell header">Hosts</div>
+    <div class="cell data"><%= reportingHosts %></div>
+</div>
+<div class="tableRow">
+    <div class="cell header">Commands</div>
+    <div class="cell data"><%= commandCount %></div>
+</div>-->
+<!--<div class="tableRow">
+
+</div>-->
+
+<!-- 	<a href="">History</a> <a href="">EPIC</a> <a href="">Actions</a> -->

@@ -1,0 +1,24 @@
+<assembly>
+    <id>bin</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>README*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>config</directory>
+            <outputDirectory>config</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>argos-dashboard.war</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
