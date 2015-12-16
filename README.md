@@ -15,6 +15,7 @@ command from drowning out a failing low frequency command.
 1. Download the tarball for the [latest release](https://github.com/bbcom/argos-dashboard/releases/latest).
 2. Edit the files in the `config` subdirectory as needed.
 3. Start the dashboard `java -jar bin/argos-dashboard.war`
+4. The dashboard will run on the port specified in the config (ex http://127.0.0.1:9000)
 
 ## Configuration
 
