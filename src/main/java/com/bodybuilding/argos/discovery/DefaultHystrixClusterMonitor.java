@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +42,7 @@ public final class DefaultHystrixClusterMonitor implements HystrixClusterMonitor
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHystrixClusterMonitor.class);
     private static final ObjectMapper om = new ObjectMapper();
     private final String clusterName;
-    private final URI uri;
+    private final URL url;
 
     private final Cache<String, HystrixCommandMetrics> commandCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.SECONDS)
@@ -50,9 +52,9 @@ public final class DefaultHystrixClusterMonitor implements HystrixClusterMonitor
 
     private volatile Observable<HystrixClusterMetrics> observable = null;
 
-    public DefaultHystrixClusterMonitor(String clusterName, String streamUrl) {
+    public DefaultHystrixClusterMonitor(String clusterName, String streamUrl) throws MalformedURLException {
         this.clusterName = clusterName;
-        this.uri = URI.create(streamUrl);
+        this.url = new URL(streamUrl);
     }
 
     @Override
@@ -85,7 +87,7 @@ public final class DefaultHystrixClusterMonitor implements HystrixClusterMonitor
     }
 
     private HystrixClusterMetrics generateMetrics() {
-        HystrixClusterMetrics.Builder metricsBuilder = new HystrixClusterMetrics.Builder(clusterName, uri.toASCIIString());
+        HystrixClusterMetrics.Builder metricsBuilder = new HystrixClusterMetrics.Builder(clusterName, url.toExternalForm());
 
         commandCache.asMap().values()
                 .stream()
@@ -110,24 +112,24 @@ public final class DefaultHystrixClusterMonitor implements HystrixClusterMonitor
             return jsonObservable;
         }
 
-        HttpClientRequest<ByteBuf> request = HttpClientRequest.createGet(uri.getPath() + "?" + uri.getQuery());
-        // TODO, do we ever need to call shutdown on this client?
-        HttpClient<ByteBuf, ServerSentEvent> client = RxNetty.<ByteBuf, ServerSentEvent>newHttpClientBuilder(uri.getHost(), uri.getPort())
+        HttpClientRequest<ByteBuf> request = HttpClientRequest.createGet(url.getPath() + "?" + url.getQuery());
+        int port = url.getPort() < 0 ? url.getDefaultPort() : url.getPort();
+        HttpClient<ByteBuf, ServerSentEvent> client = RxNetty.<ByteBuf, ServerSentEvent>newHttpClientBuilder(url.getHost(), port)
                 .withNoConnectionPooling()
                 .pipelineConfigurator(PipelineConfigurators.<ByteBuf>clientSseConfigurator())
                 .build();
 
 
         jsonObservable = client.submit(request)
-                .doOnError(t -> LOG.error("Error connecting to " + uri, t))
+                .doOnError(t -> LOG.error("Error connecting to " + url, t))
                 .flatMap(response -> {
                             if (response.getStatus().code() != 200) {
                                 return Observable.error(new RuntimeException("Failed to connect: " + response.getStatus()));
                             }
 
                             return response.getContent()
-                                    .doOnSubscribe(() -> LOG.info("Turbine => Aggregate Stream from URI: " + uri))
-                                    .doOnUnsubscribe(() -> LOG.info("Turbine => Unsubscribing Stream: " + uri))
+                                    .doOnSubscribe(() -> LOG.info("Turbine => Aggregate Stream from URL: " + url))
+                                    .doOnUnsubscribe(() -> LOG.info("Turbine => Unsubscribing Stream: " + url))
                                     .map(ServerSentEvent::contentAsString);
                         }
                 )
@@ -135,7 +137,7 @@ public final class DefaultHystrixClusterMonitor implements HystrixClusterMonitor
                 .retryWhen(attempts -> attempts.zipWith(Observable.range(1, Integer.MAX_VALUE), (k, i) -> i)
                         .flatMap(n -> {
                             int waitTimeSeconds = Math.min(6, n) * 10; // wait in 10 second increments up to a max of 1 minute
-                            LOG.info("Turbine => Retrying connection to: " + this.uri + " in {} seconds", waitTimeSeconds);
+                            LOG.info("Turbine => Retrying connection to: " + this.url + " in {} seconds", waitTimeSeconds);
                             return Observable.timer(waitTimeSeconds, TimeUnit.SECONDS);
                         })
                 )

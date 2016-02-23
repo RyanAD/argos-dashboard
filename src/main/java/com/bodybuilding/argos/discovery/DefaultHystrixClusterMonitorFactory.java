@@ -16,6 +16,10 @@
 
 package com.bodybuilding.argos.discovery;
 
+import com.google.common.base.Throwables;
+
+import java.net.MalformedURLException;
+
 /**
  * Implementation of {@link HystrixClusterMonitorFactory}  that returns instances of DefaultHystrixClusterMonitor
  * @see DefaultHystrixClusterMonitor
@@ -24,6 +28,10 @@ public class DefaultHystrixClusterMonitorFactory implements HystrixClusterMonito
 
     @Override
     public HystrixClusterMonitor createMonitor(String name, String streamUrl) {
-        return new DefaultHystrixClusterMonitor(name, streamUrl);
+        try {
+            return new DefaultHystrixClusterMonitor(name, streamUrl);
+        } catch (MalformedURLException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }
